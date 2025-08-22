@@ -4,6 +4,7 @@ export type GiftCard = {
 	cardNumber: string;
 	notes: string | null;
 	expiryDate: string | null; // ISO
+	balance: number | null;
 };
 
 const STORAGE_KEY = 'giftcards:v1';
