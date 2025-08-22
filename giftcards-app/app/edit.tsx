@@ -25,6 +25,7 @@ export default function EditScreen() {
 	}, [params.id]);
 
 	async function scheduleExpiryNotification(dateIso: string, merchant: string) {
+		if (Platform.OS === 'web') return; // notifications not scheduled on web
 		if (!dateIso) return;
 		const targetDate = new Date(dateIso);
 		if (isNaN(targetDate.getTime())) return;
