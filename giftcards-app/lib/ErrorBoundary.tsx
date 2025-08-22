@@ -42,7 +42,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 16, gap: 12 },
+	container: { flex: 1, padding: 16 },
 	title: { fontSize: 18, fontWeight: '800' },
 	message: { color: '#dc2626' },
 	scroll: { flex: 1, borderWidth: 1, borderColor: '#eee', borderRadius: 8, padding: 8 },
