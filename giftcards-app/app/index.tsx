@@ -1,8 +1,17 @@
 import { Link, useFocusEffect } from 'expo-router';
 import { useEffect, useState, useCallback } from 'react';
-import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View, Dimensions, Platform } from 'react-native';
 import { format } from 'date-fns';
 import { getAllGiftCards, GiftCard } from '../lib/db';
+
+function daysRemaining(expiryIso: string | null): number | null {
+	if (!expiryIso) return null;
+	const today = new Date();
+	today.setHours(0,0,0,0);
+	const target = new Date(expiryIso);
+	target.setHours(0,0,0,0);
+	return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
 
 export default function HomeScreen() {
 	const [cards, setCards] = useState<GiftCard[]>([]);
@@ -18,6 +27,8 @@ export default function HomeScreen() {
 		}, [])
 	);
 
+	const numColumns = 2;
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.header}>
@@ -28,15 +39,17 @@ export default function HomeScreen() {
 			</View>
 			<FlatList
 				data={cards}
+				numColumns={numColumns}
+				columnWrapperStyle={{ gap: 12, paddingHorizontal: 12 }}
+				contentContainerStyle={{ gap: 12, paddingBottom: 80 }}
 				keyExtractor={(item) => String(item.id)}
 				renderItem={({ item }) => (
 					<Link href={{ pathname: '/detail', params: { id: String(item.id) } }} asChild>
-						<Pressable style={styles.card}>
+						<Pressable style={[styles.card, { flex: 1 }]}>
 							<Text style={styles.cardTitle}>{item.merchantName}</Text>
-							<Text>Number: {item.cardNumber}</Text>
-							{item.expiryDate && (
-								<Text>Expires: {format(new Date(item.expiryDate), 'PPP')}</Text>
-							)}
+							<Text style={styles.mono}>{item.cardNumber}</Text>
+							<Text style={styles.meta}>Days: {daysRemaining(item.expiryDate ?? null) ?? '-'}</Text>
+							<Text style={styles.meta}>Bal: {item.balance != null ? item.balance.toFixed(2) : '-'}</Text>
 						</Pressable>
 					</Link>
 				)}
@@ -58,6 +71,8 @@ const styles = StyleSheet.create({
 	scanBtn: { position: 'absolute', right: 16, bottom: 16, backgroundColor: '#16a34a', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999 },
 	scanBtnText: { color: 'white', fontWeight: '700' },
 	empty: { textAlign: 'center', marginTop: 24 },
-	card: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#ddd' },
+	card: { padding: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: '#ddd', borderRadius: 10, backgroundColor: '#fafafa' },
 	cardTitle: { fontWeight: '700', marginBottom: 4 },
+	mono: { fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }), color: '#475569', marginBottom: 6 },
+	meta: { color: '#64748b', fontSize: 12 },
 });

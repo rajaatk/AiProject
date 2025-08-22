@@ -4,6 +4,15 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { getGiftCardById, deleteGiftCard, GiftCard } from '../lib/db';
 import { useToast } from '../lib/toast';
 
+function daysRemaining(expiryIso: string | null): number | null {
+	if (!expiryIso) return null;
+	const today = new Date();
+	today.setHours(0,0,0,0);
+	const target = new Date(expiryIso);
+	target.setHours(0,0,0,0);
+	return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 export default function DetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const [card, setCard] = useState<GiftCard | null>(null);
@@ -37,13 +46,19 @@ export default function DetailScreen() {
 
 	if (!card) return <SafeAreaView style={styles.center}><Text>Loading...</Text></SafeAreaView>;
 
+	const remaining = daysRemaining(card.expiryDate ?? null);
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<Text style={styles.title}>{card.merchantName}</Text>
-			<Text>Number: {card.cardNumber}</Text>
-			{card.expiryDate && <Text>Expiry: {new Date(card.expiryDate).toDateString()}</Text>}
-			{card.notes && <Text>Notes: {card.notes}</Text>}
-			<View style={styles.row}>
+			<View style={styles.table}>
+				<View style={styles.row}><Text style={styles.th}>Card Number</Text><Text style={styles.td}>{card.cardNumber}</Text></View>
+				<View style={styles.row}><Text style={styles.th}>Expiry Date</Text><Text style={styles.td}>{card.expiryDate ? new Date(card.expiryDate).toDateString() : '-'}</Text></View>
+				<View style={styles.row}><Text style={styles.th}>Days Remaining</Text><Text style={styles.td}>{remaining ?? '-'}</Text></View>
+				<View style={styles.row}><Text style={styles.th}>Balance</Text><Text style={styles.td}>{card.balance != null ? card.balance.toFixed(2) : '-'}</Text></View>
+				{card.notes ? (<View style={styles.row}><Text style={styles.th}>Notes</Text><Text style={styles.td}>{card.notes}</Text></View>) : null}
+			</View>
+			<View style={styles.actions}>
 				<Button title="Edit" onPress={() => router.push({ pathname: '/edit', params: { id: String(card.id) } })} />
 				<Button title="Delete" color="#dc2626" onPress={onDelete} />
 			</View>
@@ -55,5 +70,9 @@ const styles = StyleSheet.create({
 	container: { flex: 1, padding: 16, gap: 12 },
 	center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 	title: { fontSize: 22, fontWeight: '800' },
-	row: { flexDirection: 'row', gap: 12 },
+	table: { borderWidth: StyleSheet.hairlineWidth, borderColor: '#ddd', borderRadius: 8, overflow: 'hidden' },
+	row: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#eee' },
+	th: { fontWeight: '700', width: '40%' },
+	td: { width: '60%', textAlign: 'right' },
+	actions: { flexDirection: 'row', gap: 12 },
 });

@@ -12,6 +12,7 @@ export default function EditScreen() {
 	const [cardNumber, setCardNumber] = useState(params.number ?? '');
 	const [notes, setNotes] = useState('');
 	const [expiryDate, setExpiryDate] = useState(''); // YYYY-MM-DD
+	const [balance, setBalance] = useState(''); // string input
 	const toast = useToast();
 
 	useEffect(() => {
@@ -22,6 +23,7 @@ export default function EditScreen() {
 				setCardNumber(card.cardNumber);
 				setNotes(card.notes ?? '');
 				setExpiryDate(card.expiryDate ? String(card.expiryDate).slice(0, 10) : '');
+				setBalance(card.balance != null ? String(card.balance) : '');
 			});
 		}
 	}, [params.id]);
@@ -49,6 +51,7 @@ export default function EditScreen() {
 				cardNumber: cardNumber.trim(),
 				notes: notes.trim() || null,
 				expiryDate: expiryDate ? new Date(expiryDate).toISOString() : null,
+				balance: balance.trim() ? Number(balance) : null,
 			};
 			const id = params.id ? Number(params.id) : undefined;
 			const savedId = await upsertGiftCard(payload, id);
@@ -77,6 +80,10 @@ export default function EditScreen() {
 			<View style={styles.formRow}>
 				<Text style={styles.label}>Expiry (YYYY-MM-DD)</Text>
 				<TextInput style={styles.input} value={expiryDate} onChangeText={setExpiryDate} placeholder="2025-12-31" />
+			</View>
+			<View style={styles.formRow}>
+				<Text style={styles.label}>Balance</Text>
+				<TextInput style={styles.input} value={balance} onChangeText={setBalance} keyboardType="decimal-pad" placeholder="0.00" />
 			</View>
 			<View style={styles.formRow}>
 				<Text style={styles.label}>Notes</Text>
