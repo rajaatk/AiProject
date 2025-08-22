@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import '../lib/notifications';
+import '../lib/web-polyfills';
 import { useColorScheme } from 'react-native';
 import { ToastProvider } from '../lib/toast';
 import { ErrorBoundary } from '../lib/ErrorBoundary';
