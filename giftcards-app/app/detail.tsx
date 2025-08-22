@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { getGiftCardById, deleteGiftCard, GiftCard } from '../lib/db';
 import { useToast } from '../lib/toast';
@@ -16,6 +16,15 @@ export default function DetailScreen() {
 
 	async function onDelete() {
 		if (!card?.id) return;
+		if (Platform.OS === 'web') {
+			// eslint-disable-next-line no-restricted-globals
+			const ok = typeof window !== 'undefined' ? window.confirm('Are you sure you want to delete this card?') : false;
+			if (!ok) return;
+			await deleteGiftCard(card.id!);
+			toast.show('Card deleted', 'success');
+			router.replace('/');
+			return;
+		}
 		Alert.alert('Delete', 'Are you sure you want to delete this card?', [
 			{ text: 'Cancel', style: 'cancel' },
 			{ text: 'Delete', style: 'destructive', onPress: async () => {
