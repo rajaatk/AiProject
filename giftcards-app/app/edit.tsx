@@ -3,6 +3,7 @@ import { Alert, Button, Platform, SafeAreaView, StyleSheet, Text, TextInput, Vie
 import { useLocalSearchParams, router } from 'expo-router';
 import { upsertGiftCard, getGiftCardById, GiftCard } from '../lib/db';
 import * as Notifications from 'expo-notifications';
+import { useToast } from '../lib/toast';
 
 export default function EditScreen() {
 	const params = useLocalSearchParams<{ id?: string; number?: string }>();
@@ -11,6 +12,7 @@ export default function EditScreen() {
 	const [cardNumber, setCardNumber] = useState(params.number ?? '');
 	const [notes, setNotes] = useState('');
 	const [expiryDate, setExpiryDate] = useState(''); // YYYY-MM-DD
+	const toast = useToast();
 
 	useEffect(() => {
 		if (params.id) {
@@ -37,22 +39,29 @@ export default function EditScreen() {
 	}
 
 	async function onSave() {
-		if (!merchantName.trim() || !cardNumber.trim()) {
-			Alert.alert('Missing info', 'Merchant and card number are required.');
-			return;
+		try {
+			if (!merchantName.trim() || !cardNumber.trim()) {
+				toast.show('Merchant and card number are required', 'error');
+				return;
+			}
+			const payload: Omit<GiftCard, 'id'> = {
+				merchantName: merchantName.trim(),
+				cardNumber: cardNumber.trim(),
+				notes: notes.trim() || null,
+				expiryDate: expiryDate ? new Date(expiryDate).toISOString() : null,
+			};
+			const id = params.id ? Number(params.id) : undefined;
+			const savedId = await upsertGiftCard(payload, id);
+			if (payload.expiryDate) {
+				await scheduleExpiryNotification(payload.expiryDate, payload.merchantName);
+			}
+			toast.show('Gift card saved', 'success');
+			router.replace(`/detail?id=${savedId}`);
+		} catch (e) {
+			console.error(e);
+			toast.show('Failed to save gift card', 'error');
+			Alert.alert('Error', 'Failed to save gift card.');
 		}
-		const payload: Omit<GiftCard, 'id'> = {
-			merchantName: merchantName.trim(),
-			cardNumber: cardNumber.trim(),
-			notes: notes.trim() || null,
-			expiryDate: expiryDate ? new Date(expiryDate).toISOString() : null,
-		};
-		const id = params.id ? Number(params.id) : undefined;
-		const savedId = await upsertGiftCard(payload, id);
-		if (payload.expiryDate) {
-			await scheduleExpiryNotification(payload.expiryDate, payload.merchantName);
-		}
-		Alert.alert('Saved', 'Gift card saved.', [{ text: 'OK', onPress: () => router.replace(`/detail?id=${savedId}`) }]);
 	}
 
 	return (
