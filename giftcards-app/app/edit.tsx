@@ -3,7 +3,6 @@ import { Alert, Button, Platform, SafeAreaView, StyleSheet, Text, TextInput, Vie
 import { useLocalSearchParams, router } from 'expo-router';
 import { upsertGiftCard, getGiftCardById, GiftCard } from '../lib/db';
 import * as Notifications from 'expo-notifications';
-import { useToast } from '../lib/toast';
 
 export default function EditScreen() {
 	const params = useLocalSearchParams<{ id?: string; number?: string }>();
@@ -12,8 +11,6 @@ export default function EditScreen() {
 	const [cardNumber, setCardNumber] = useState(params.number ?? '');
 	const [notes, setNotes] = useState('');
 	const [expiryDate, setExpiryDate] = useState(''); // YYYY-MM-DD
-	const [balance, setBalance] = useState(''); // string input
-	const toast = useToast();
 
 	useEffect(() => {
 		if (params.id) {
@@ -23,7 +20,6 @@ export default function EditScreen() {
 				setCardNumber(card.cardNumber);
 				setNotes(card.notes ?? '');
 				setExpiryDate(card.expiryDate ? String(card.expiryDate).slice(0, 10) : '');
-				setBalance(card.balance != null ? String(card.balance) : '');
 			});
 		}
 	}, [params.id]);
@@ -41,30 +37,22 @@ export default function EditScreen() {
 	}
 
 	async function onSave() {
-		try {
-			if (!merchantName.trim() || !cardNumber.trim()) {
-				toast.show('Merchant and card number are required', 'error');
-				return;
-			}
-			const payload: Omit<GiftCard, 'id'> = {
-				merchantName: merchantName.trim(),
-				cardNumber: cardNumber.trim(),
-				notes: notes.trim() || null,
-				expiryDate: expiryDate ? new Date(expiryDate).toISOString() : null,
-				balance: balance.trim() ? Number(balance) : null,
-			};
-			const id = params.id ? Number(params.id) : undefined;
-			const savedId = await upsertGiftCard(payload, id);
-			if (payload.expiryDate) {
-				await scheduleExpiryNotification(payload.expiryDate, payload.merchantName);
-			}
-			toast.show('Gift card saved', 'success');
-			router.replace(`/detail?id=${savedId}`);
-		} catch (e) {
-			console.error(e);
-			toast.show('Failed to save gift card', 'error');
-			Alert.alert('Error', 'Failed to save gift card.');
+		if (!merchantName.trim() || !cardNumber.trim()) {
+			Alert.alert('Missing info', 'Merchant and card number are required.');
+			return;
 		}
+		const payload: Omit<GiftCard, 'id'> = {
+			merchantName: merchantName.trim(),
+			cardNumber: cardNumber.trim(),
+			notes: notes.trim() || null,
+			expiryDate: expiryDate ? new Date(expiryDate).toISOString() : null,
+		};
+		const id = params.id ? Number(params.id) : undefined;
+		const savedId = await upsertGiftCard(payload, id);
+		if (payload.expiryDate) {
+			await scheduleExpiryNotification(payload.expiryDate, payload.merchantName);
+		}
+		Alert.alert('Saved', 'Gift card saved.', [{ text: 'OK', onPress: () => router.replace(`/detail?id=${savedId}`) }]);
 	}
 
 	return (
@@ -82,10 +70,6 @@ export default function EditScreen() {
 				<TextInput style={styles.input} value={expiryDate} onChangeText={setExpiryDate} placeholder="2025-12-31" />
 			</View>
 			<View style={styles.formRow}>
-				<Text style={styles.label}>Balance</Text>
-				<TextInput style={styles.input} value={balance} onChangeText={setBalance} keyboardType="decimal-pad" placeholder="0.00" />
-			</View>
-			<View style={styles.formRow}>
 				<Text style={styles.label}>Notes</Text>
 				<TextInput style={[styles.input, styles.multiline]} value={notes} onChangeText={setNotes} placeholder="Optional" multiline />
 			</View>
@@ -95,8 +79,8 @@ export default function EditScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 16 },
-	formRow: { marginBottom: 12 },
+	container: { flex: 1, padding: 16, gap: 12 },
+	formRow: { gap: 6 },
 	label: { fontWeight: '700' },
 	input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
 	multiline: { minHeight: 80, textAlignVertical: 'top' },
