@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, Platform, SafeAreaView, StyleSheet, Text, View, TextInput } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { router } from 'expo-router';
 
@@ -23,17 +23,31 @@ export default function ScanScreen() {
 			const videoElement = document.createElement('video');
 			videoElement.setAttribute('playsinline', 'true');
 			videoRef.current = videoElement;
-			document.getElementById('web-camera-container')?.appendChild(videoElement);
-			const controls = await codeReader.decodeFromVideoDevice(undefined, videoElement, (result: any, err: any) => {
-				if (result && !scanned) {
-					setScanned(true);
-					router.replace({ pathname: '/edit', params: { number: result.getText() } });
-				}
-			});
-			cleanup = () => controls.stop();
+			const mount = document.getElementById('web-camera-container');
+			if (!mount) return;
+			mount.innerHTML = '';
+			mount.appendChild(videoElement);
+			try {
+				const controls = await codeReader.decodeFromVideoDevice(undefined, videoElement, (result: any, err: any) => {
+					if (result && !scanned) {
+						setScanned(true);
+						router.replace({ pathname: '/edit', params: { number: result.getText() } });
+					}
+				});
+				cleanup = () => controls.stop();
+			} catch (e) {
+				console.warn('Camera unavailable, falling back to manual entry.', e);
+			}
 		})().catch((e) => console.error(e));
 		return cleanup;
 	}, [scanned]);
+
+	// Manual entry for web
+	const [manual, setManual] = useState('');
+	function submitManual() {
+		if (!manual.trim()) return;
+		router.replace({ pathname: '/edit', params: { number: manual.trim() } });
+	}
 
 	const handleBarCodeScanned = ({ data }: { data: string }) => {
 		if (scanned) return;
@@ -58,6 +72,13 @@ export default function ScanScreen() {
 			{Platform.OS === 'web' ? (
 				<View style={styles.webContainer}>
 					<View nativeID="web-camera-container" style={styles.webCamera} />
+					<View style={{ padding: 12 }}>
+						<Text>Or enter manually:</Text>
+						<View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+							<TextInput style={{ flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 }} value={manual} onChangeText={setManual} placeholder="1234..." />
+							<Button title="Use" onPress={submitManual} />
+						</View>
+					</View>
 					{scanned && (
 						<View style={styles.overlay}><Text style={styles.overlayText}>Scanned!</Text></View>
 					)}

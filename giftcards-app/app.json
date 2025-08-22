@@ -9,7 +9,7 @@
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
-      ["expo-notifications", { "sounds": ["./assets/notify.wav"] }]
+      "expo-notifications"
     ],
     "splash": {
       "image": "./assets/splash-icon.png",
