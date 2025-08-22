@@ -59,7 +59,9 @@ export default function DetailScreen() {
 				{card.notes ? (<View style={styles.row}><Text style={styles.th}>Notes</Text><Text style={styles.td}>{card.notes}</Text></View>) : null}
 			</View>
 			<View style={styles.actions}>
-				<Button title="Edit" onPress={() => router.push({ pathname: '/edit', params: { id: String(card.id) } })} />
+				<View style={{ marginRight: 12 }}>
+					<Button title="Edit" onPress={() => router.push({ pathname: '/edit', params: { id: String(card.id) } })} />
+				</View>
 				<Button title="Delete" color="#dc2626" onPress={onDelete} />
 			</View>
 		</SafeAreaView>
@@ -74,5 +76,5 @@ const styles = StyleSheet.create({
 	row: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#eee' },
 	th: { fontWeight: '700', width: '40%' },
 	td: { width: '60%', textAlign: 'right' },
-	actions: { flexDirection: 'row', gap: 12 },
+	actions: { flexDirection: 'row' },
 });

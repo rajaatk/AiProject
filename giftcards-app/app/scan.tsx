@@ -74,8 +74,8 @@ export default function ScanScreen() {
 					<View nativeID="web-camera-container" style={styles.webCamera} />
 					<View style={{ padding: 12 }}>
 						<Text>Or enter manually:</Text>
-						<View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-							<TextInput style={{ flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 }} value={manual} onChangeText={setManual} placeholder="1234..." />
+						<View style={{ flexDirection: 'row', marginTop: 8 }}>
+							<TextInput style={{ flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginRight: 8 }} value={manual} onChangeText={setManual} placeholder="1234..." />
 							<Button title="Use" onPress={submitManual} />
 						</View>
 					</View>

@@ -40,12 +40,11 @@ export default function HomeScreen() {
 			<FlatList
 				data={cards}
 				numColumns={numColumns}
-				columnWrapperStyle={{ gap: 12, paddingHorizontal: 12 }}
-				contentContainerStyle={{ gap: 12, paddingBottom: 80 }}
+				contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 80 }}
 				keyExtractor={(item) => String(item.id)}
 				renderItem={({ item }) => (
 					<Link href={{ pathname: '/detail', params: { id: String(item.id) } }} asChild>
-						<Pressable style={[styles.card, { flex: 1 }]}>
+						<Pressable style={[styles.card, { flex: 1, margin: 6 }]}>
 							<Text style={styles.cardTitle}>{item.merchantName}</Text>
 							<Text style={styles.mono}>{item.cardNumber}</Text>
 							<Text style={styles.meta}>Days: {daysRemaining(item.expiryDate ?? null) ?? '-'}</Text>
