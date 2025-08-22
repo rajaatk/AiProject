@@ -95,8 +95,8 @@ export default function EditScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 16, gap: 12 },
-	formRow: { gap: 6 },
+	container: { flex: 1, padding: 16 },
+	formRow: { marginBottom: 12 },
 	label: { fontWeight: '700' },
 	input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
 	multiline: { minHeight: 80, textAlignVertical: 'top' },

@@ -69,7 +69,7 @@ export default function DetailScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 16, gap: 12 },
+	container: { flex: 1, padding: 16 },
 	center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 	title: { fontSize: 22, fontWeight: '800' },
 	table: { borderWidth: StyleSheet.hairlineWidth, borderColor: '#ddd', borderRadius: 8, overflow: 'hidden' },
